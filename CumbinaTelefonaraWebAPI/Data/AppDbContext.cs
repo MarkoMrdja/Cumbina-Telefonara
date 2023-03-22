@@ -1,9 +1,10 @@
 ﻿using CumbinaTelefonaraWebAPI.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace CumbinaTelefonaraWebAPI.Data
 {
-    public class AppDbContext : DbContext
+    public class AppDbContext : IdentityDbContext
     {
         public DbSet<Phone> Phones { get; set; }
 

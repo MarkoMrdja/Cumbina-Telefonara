@@ -1,10 +1,13 @@
 ﻿using CumbinaTelefonaraWebAPI.Data;
 using CumbinaTelefonaraWebAPI.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace CumbinaTelefonaraWebAPI.Controllers
 {
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Route("api/[controller]")]
     [ApiController]
     public class PhoneController : ControllerBase
