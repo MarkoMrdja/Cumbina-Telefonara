@@ -1,3 +1,4 @@
+using CumbinaTelefonaraWebAPI.Core;
 using CumbinaTelefonaraWebAPI.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -43,6 +44,9 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedEmail = false)
     .AddEntityFrameworkStores<AppDbContext>();
+
+
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 var app = builder.Build();
 

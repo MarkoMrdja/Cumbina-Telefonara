@@ -1,74 +1,81 @@
-﻿using CumbinaTelefonaraWebAPI.Data;
+﻿using CumbinaTelefonaraWebAPI.Core;
+using CumbinaTelefonaraWebAPI.Data;
 using CumbinaTelefonaraWebAPI.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
 
 namespace CumbinaTelefonaraWebAPI.Controllers
 {
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Route("api/[controller]")]
     [ApiController]
     public class PhoneController : ControllerBase
     {
-        private static AppDbContext _context;
+        private static IUnitOfWork _unitOfWork;
 
-        public PhoneController(AppDbContext context) 
+        public PhoneController(IUnitOfWork unitOfWork) 
         {
-            _context = context;
+            _unitOfWork = unitOfWork;
         }
 
         [HttpGet]
+        [Route("GetAllPhones")]
         public async Task<IActionResult> Get()
         {
-            var phones = await _context.Phones.ToListAsync();
+            var phones = await _unitOfWork.Phones.GetAll();
             return Ok(phones);
         }
 
-        [HttpGet("{id:int}")]
+        [HttpGet]
+        [Route("GetById")]
         public async Task<IActionResult> Get(int id)
         {
-            var phone = await _context.Phones.FirstOrDefaultAsync(x => x.Id == id);
+            var phone = await _unitOfWork.Phones.GetById(id);
             if(phone == null)
-                return BadRequest("Invalid ID");
+                return NotFound();
 
             return Ok(phone);
         }
 
         [HttpPost]
+        [Route("AddPhone")]
         public async Task<IActionResult> Post(Phone phone)
         {
 
-            await _context.Phones.AddAsync(phone);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("Get", phone.Id, phone);
+            await _unitOfWork.Phones.Add(phone);
+            await _unitOfWork.CompleteAsync();
+            return Ok();
         }
 
         [HttpPatch]
-        public async Task<IActionResult> Patch(int id, int batteryLife)
+        [Route("UpdatePhone")]
+        public async Task<IActionResult> Update(Phone phone)
         {
-            var phone = await _context.Phones.FirstOrDefaultAsync(x => x.Id == id);
-            if (phone == null)
-                return BadRequest("Invalid ID");
+            var existingPhone = await _unitOfWork.Phones.GetById(phone.Id);
 
-            phone.BatteryLife = batteryLife;
-            await _context.SaveChangesAsync();
+            if (existingPhone == null)
+                return NotFound();
+
+            await _unitOfWork.Phones.Update(existingPhone);
+            await _unitOfWork.CompleteAsync();
 
             return NoContent();
         }
 
         [HttpDelete]
+        [Route("DeletePhone")]
         public async Task<IActionResult> Delete(int id)
         {
-            var phone = await _context.Phones.FirstOrDefaultAsync(x => x.Id == id);
+            var phone = await _unitOfWork.Phones.GetById(id);
 
             if (phone == null)
-                return BadRequest("Invalid ID");
+                return NotFound();
 
-            _context.Phones.Remove(phone);
-            await _context.SaveChangesAsync();
+            await _unitOfWork.Phones.Delete(phone);
+            await _unitOfWork.CompleteAsync();
 
             return NoContent();
         }
